@@ -41,6 +41,7 @@ regd_users.post("/login", (req,res) => {
   const username = req.body.username;
   const password = req.body.password;
 
+  console.log("username [" + username + "] password [" + password + "]");
   if (!username || !password) {
       return res.status(404).json({message: "Error logging in"});
   }
@@ -62,8 +63,41 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  console.log("params [" + req.params + "]");
+  const isbn = req.params.isbn;
+  console.log("body [" + req.body + "]");
+  const review = req.body.review;
+  // the username is saverd in session in /login
+  console.log("user [" +  req.session.authorization.username + "]");
+  const username = req.session.authorization.username;
+  // if book exist
+  if (books[isbn]) {
+    let auxBook = books[isbn];
+    // put into aux book the review
+    auxBook.reviews[username] = review;
+    // update de book with auxBook complete with the new review
+    books[isbn] = auxBook;
+    return res.status(200).send("Put review OK");
+}
+else {
+    return res.status(404).json({message: "The book is not found"});
+}
 });
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+    const username = req.session.authorization.username;
+    if (books[isbn]) {
+        let book = books[isbn];
+        delete book.reviews[username];
+        books[isbn] = book;
+        return res.status(200).send("Review  deleted OK");
+    }
+    else {
+        return res.status(404).json({message: "The book is not found"});
+    }
+  });
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
