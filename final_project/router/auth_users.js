@@ -75,7 +75,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     let auxBook = books[isbn];
     // put into aux book the review
     auxBook.reviews[username] = review;
-    // update de book with auxBook complete with the new review
+    // update the book with auxBook complete with the new review
     books[isbn] = auxBook;
     return res.status(200).send("Put review OK");
 }
@@ -88,9 +88,11 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const username = req.session.authorization.username;
     if (books[isbn]) {
-        let book = books[isbn];
-        delete book.reviews[username];
-        books[isbn] = book;
+        let auxBook = books[isbn];
+        // quit review of the username from array of reviews in aux book
+        delete auxBook.reviews[username];
+        // update the book with auxBook with no review
+        books[isbn] = auxBook;
         return res.status(200).send("Review  deleted OK");
     }
     else {
