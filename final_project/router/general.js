@@ -20,7 +20,7 @@ public_users.post("/register", (req,res) => {
     return res.status(404).json({message: "Unable to register user."});
 });
 
-function getBookList(){
+function promiseBookList(){
     return new Promise((resolve,reject)=>{
       resolve(books);
     })
@@ -29,33 +29,79 @@ function getBookList(){
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
   //Write your code here
-  res.send(JSON.stringify(books,null,4));
+  //res.send(JSON.stringify(books, null, 4));
+  promiseBookList().then( (bookList)=>res.send(JSON.stringify(bookList, null, 4)),
+    (error)=>res.send("No items")
+  );
+
 });
+
+function promiseIsbn(isbn){
+    let book = books[isbn];  
+    return new Promise((resolve,reject)=>{
+      if (book) {
+        resolve(book);
+      }else{
+        reject("Book no exist");
+      }    
+    })
+  }
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
   const isbn = req.params.isbn;
-  res.send(books[isbn])
+  //res.send(books[isbn])
+  promiseIsbn(isbn).then( (book)=>res.send(JSON.stringify(book, null, 4)),
+    (error)=>res.send(error)
+  );
  });
   
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+
+  // get author from req
+  let author =  req.params.author;
+  // array for author books
+  let authorBooks = [];
+
+  // iterate for every book
+  for (const [key] of Object.keys(books)) {
+      // if same author put element into array of author books
+      if (books[key].author === author) {
+        authorBooks.push(books[key]);
+      }
+  }
+  // response with array or author books
+  res.send(authorBooks);
+
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  // get title from req
+  let title =  req.params.title;
+  // array for title books
+  let titleBooks = [];
+
+  // iterate for every book
+  for (const [key] of Object.keys(books)) {
+      // if same title put element into array of title books
+      if (books[key].title === title) {
+        titleBooks.push(books[key]);
+      }
+  }
+  // response with array or author books
+  res.send(titleBooks);
 });
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  res.send(books[req.params.isbn].reviews)
 });
 
 module.exports.general = public_users;
