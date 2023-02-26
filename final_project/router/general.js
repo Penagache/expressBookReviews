@@ -22,30 +22,28 @@ public_users.post("/register", (req,res) => {
 
 function promiseBookList(){
     return new Promise((resolve,reject)=>{
-      resolve(books);
+        resolve(books);
     })
-  }
+}
   
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  //Write your code here
-  //res.send(JSON.stringify(books, null, 4));
-  promiseBookList().then( (bookList)=>res.send(JSON.stringify(bookList, null, 4)),
-    (error)=>res.send("No items")
-  );
-
+    //Write your code here
+    //res.send(JSON.stringify(books, null, 4));
+    promiseBookList().then((bookList)=>res.send(JSON.stringify(bookList, null, 4)),
+        (error)=>res.send("No books"));
 });
 
 function promiseIsbn(isbn){
     let book = books[isbn];  
     return new Promise((resolve,reject)=>{
-      if (book) {
+      if (book){
         resolve(book);
       }else{
         reject("Book no exist");
       }    
     })
-  }
+}
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
@@ -55,47 +53,68 @@ public_users.get('/isbn/:isbn',function (req, res) {
   promiseIsbn(isbn).then( (book)=>res.send(JSON.stringify(book, null, 4)),
     (error)=>res.send(error)
   );
- });
-  
-  
+});
+
+function promiseAuthor(author){
+    return new Promise((resolve,reject)=>{
+      // array for author books
+      let authorBooks = [];
+
+      // iterate for every book
+      for (const [key] of Object.keys(books)) {
+        // if same author put element into array of author books
+        if (books[key].author === author) {
+          authorBooks.push(books[key]);
+        }
+      } 
+      
+      if (authorBooks.length >0){
+        resolve(authorBooks);
+      }else{
+        reject("There are not books");
+      }    
+
+    })
+}
+
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
-
   // get author from req
   let author =  req.params.author;
-  // array for author books
-  let authorBooks = [];
-
-  // iterate for every book
-  for (const [key] of Object.keys(books)) {
-      // if same author put element into array of author books
-      if (books[key].author === author) {
-        authorBooks.push(books[key]);
-      }
-  }
-  // response with array or author books
-  res.send(authorBooks);
-
+  promiseAuthor(author).then( (authorBooks)=>res.send(JSON.stringify(authorBooks, null, 4)),
+    (error)=>res.send(error));
 });
 
+function promiseTitle(title){
+    return new Promise((resolve,reject)=>{
+    // array for title books
+    let titleBooks = [];
+
+    // iterate for every book
+    for (const [key] of Object.keys(books)) {
+      // if same title put element into array of title books
+      if (books[key].title === title) {
+        titleBooks.push(books[key]);
+      }
+    }
+      
+    if (titleBooks.length >0){
+        resolve(titleBooks);
+    }else{
+        reject("There are not books");
+    }    
+
+    })
+}
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
   // get title from req
   let title =  req.params.title;
-  // array for title books
-  let titleBooks = [];
-
-  // iterate for every book
-  for (const [key] of Object.keys(books)) {
-      // if same title put element into array of title books
-      if (books[key].title === title) {
-        titleBooks.push(books[key]);
-      }
-  }
-  // response with array or author books
-  res.send(titleBooks);
+  console.log("title [" +  title + "]");
+  promiseTitle(title).then((titleBooks)=>res.send(JSON.stringify(titleBooks, null, 4)),
+    (error)=>res.send(error));
 });
 
 //  Get book review
